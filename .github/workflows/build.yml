@@ -1,0 +1,28 @@
+name: Build Minecraft Plugin
+on:
+  push:
+    branches: [ "main", "master" ] # Baut bei jedem Upload auf diesen Branches
+  workflow_dispatch: # Ermöglicht es, den Build manuell am Handy zu starten
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Java einrichten
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21' # Hier '17' oder '21' eintragen – je nach Serverversion
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Mit Maven kompilieren
+        run: mvn clean package
+
+      - name: Fertige JAR-Datei bereitstellen
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-jar
+          path: target/*.jar
