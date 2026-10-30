@@ -10,16 +10,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: projekt.zip entpacken
+        run: |
+          if [ ! -f projekt.zip ]; then
+            echo "projekt.zip wurde im Hauptordner des Repos nicht gefunden"
+            exit 1
+          fi
+          unzip -o projekt.zip -d projekt
+          POM=$(find projekt -name pom.xml -not -path "*/target/*" | head -n 1)
+          if [ -z "$POM" ]; then
+            echo "Keine pom.xml in projekt.zip gefunden"
+            exit 1
+          fi
+          echo "PROJECT_DIR=$(dirname "$POM")" >> "$GITHUB_ENV"
+          echo "Projekt gefunden in: $(dirname "$POM")"
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
-          cache: maven
 
       - name: Build
         run: mvn -B clean package
+        working-directory: ${{ env.PROJECT_DIR }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: BlockLogWebhook
-          path: target/BlockLogWebhook.jar
+          name: Plugin
+          path: ${{ env.PROJECT_DIR }}/target/*.jar
